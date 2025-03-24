@@ -1,4 +1,3 @@
-// script.js
 let gameData = JSON.parse(localStorage.getItem('yyGame')) || {
     points: 50,
     inventory: []
@@ -48,7 +47,7 @@ const cardData = [
 ];
 
 // 系統功能
-function showNotice(text, duration=1500) {
+function showNotice(text, duration = 1500) {
     const notice = document.querySelector('.save-notice');
     notice.textContent = text;
     notice.style.display = 'block';
@@ -56,14 +55,26 @@ function showNotice(text, duration=1500) {
 }
 
 function saveGame() {
-    localStorage.setItem('yyGame', JSON.stringify(gameData));
-    showNotice('遊戲進度已保存！');
+    try {
+        localStorage.setItem('yyGame', JSON.stringify(gameData));
+        showNotice('遊戲進度已保存！');
+    } catch (e) {
+        alert('儲存失敗，請檢查瀏覽器設置！');
+    }
 }
 
 function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-    document.getElementById(pageId).style.display = 'block';
-    if (pageId === 'inventory') updateInventory();
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+    });
+    const page = document.getElementById(pageId);
+    page.style.display = 'block';
+    setTimeout(() => page.classList.add('active'), 10);
+    if (pageId === 'inventory') {
+        document.getElementById('rarity-filter').value = 'all';
+        updateInventory();
+    }
     document.getElementById('points').textContent = gameData.points;
 }
 
@@ -109,7 +120,6 @@ function startGame() {
                 continue;
             }
             
-            // 答案驗證（包含格式處理）
             const processedAnswer = userInput.trim().toLowerCase();
             const correctAnswer = q.answer.toLowerCase();
             
@@ -128,7 +138,6 @@ function startGame() {
     gameData.points += earnedPoints;
     saveGame();
     
-    // 根據分數顯示不同評價
     const evaluation = score >= 100 ? "天生一對！" :
                      score >= 75 ? "心有靈犀！" :
                      score >= 50 ? "還需磨合～" : 
@@ -156,10 +165,22 @@ function drawCard() {
     else selectedRarity = 'N';
 
     const pool = cardData.filter(c => c.rarity === selectedRarity);
-    const newCard = {...pool[Math.floor(Math.random() * pool.length)]};
+    const newCard = { ...pool[Math.floor(Math.random() * pool.length)] };
     gameData.inventory.push(newCard);
     
-    showCardResult(newCard);
+    // 播放抽卡音效
+    document.getElementById('draw-sound').play();
+    
+    // 顯示抽卡動畫
+    const container = document.getElementById('card-result');
+    container.innerHTML = '<div class="card-draw-animation">抽卡中...</div>';
+    setTimeout(() => {
+        showCardResult(newCard);
+        // 3秒後自動隱藏卡片並顯示提示
+        setTimeout(() => {
+            container.innerHTML = '<p class="card-result-text">卡片已加入卡庫，請查看！</p>';
+        }, 3000);
+    }, 1000);
     saveGame();
 }
 
@@ -181,13 +202,16 @@ function showCardResult(card) {
         </div>
         <p class="card-result-text">🎉 獲得 ${card.name}！</p>
     `;
-    showPage('draw');
 }
 
 // 卡庫管理
-function updateInventory() {
+function updateInventory(filterRarity = 'all') {
     const container = document.getElementById('card-list');
-    container.innerHTML = gameData.inventory.map((card, index) => `
+    let filteredInventory = gameData.inventory;
+    if (filterRarity !== 'all') {
+        filteredInventory = gameData.inventory.filter(c => c.rarity === filterRarity);
+    }
+    container.innerHTML = filteredInventory.map((card, index) => `
         <div class="card" onclick="this.classList.toggle('flipped')">
             <div class="card-inner">
                 <div class="card-face card-front">
@@ -205,12 +229,19 @@ function updateInventory() {
     `).join('') || '<p class="empty-tip">卡庫空空如也，快去抽卡吧～</p>';
 }
 
+function filterCards() {
+    const filterValue = document.getElementById('rarity-filter').value;
+    updateInventory(filterValue);
+}
+
 function useCard(index) {
     const card = gameData.inventory[index];
     if (confirm(`確定要使用「${card.name}」嗎？\n效果：${card.effect}`)) {
+        // 播放使用音效
+        document.getElementById('use-sound').play();
         alert(`🎉 已使用 ${card.name}！\n執行方式：${card.execution}`);
         gameData.inventory.splice(index, 1);
-        updateInventory();
+        updateInventory(document.getElementById('rarity-filter').value);
         saveGame();
     }
 }
@@ -228,24 +259,26 @@ function craftCard(targetRarity) {
     const materials = gameData.inventory.filter(c => c.rarity === recipe.need);
 
     if (materials.length >= recipe.amount) {
-        let count = 0;
-        gameData.inventory = gameData.inventory.filter(c => {
-            if (c.rarity === recipe.need && count < recipe.amount) {
-                count++;
-                return false;
-            }
-            return true;
-        });
+        if (confirm(`確定要消耗 ${recipe.amount} 張 ${recipe.need} 卡合成 ${targetRarity} 卡嗎？`)) {
+            let count = 0;
+            gameData.inventory = gameData.inventory.filter(c => {
+                if (c.rarity === recipe.need && count < recipe.amount) {
+                    count++;
+                    return false;
+                }
+                return true;
+            });
 
-        const newCardPool = cardData.filter(c => c.rarity === targetRarity);
-        const newCard = {...newCardPool[Math.floor(Math.random() * newCardPool.length)]};
-        gameData.inventory.push(newCard);
-        
-        updateInventory();
-        saveGame();
-        alert(`✨ 合成成功！獲得 ${newCard.name}！`);
+            const newCardPool = cardData.filter(c => c.rarity === targetRarity);
+            const newCard = { ...newCardPool[Math.floor(Math.random() * newCardPool.length)] };
+            gameData.inventory.push(newCard);
+            
+            updateInventory(document.getElementById('rarity-filter').value);
+            saveGame();
+            alert(`✨ 合成成功！獲得 ${newCard.name}！`);
+        }
     } else {
-        alert(`材料不足！需要${recipe.amount}張${recipe.need}卡`);
+        alert(`材料不足！需要 ${recipe.amount} 張 ${recipe.need} 卡`);
     }
 }
 
