@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -9,7 +8,7 @@
 </head>
 <body>
     <!-- 主頁 -->
-    <div id="home" class="page">
+    <div id="home" class="page active">
         <h1>❤️ 小嵐嵐專屬遊戲 ❤️</h1>
         <div class="points-display">甜蜜點數：<span id="points">0</span></div>
         <button onclick="showPage('game')">開始遊戲</button>
@@ -36,8 +35,19 @@
     <!-- 卡庫頁 -->
     <div id="inventory" class="page">
         <h2>📦 小嵐嵐專屬卡庫</h2>
-        <div id="card-list"></div>
-        <button onclick="showPage('home')">返回</button>
+        <div class="filter">
+            <label for="rarity-filter">過濾稀有度：</label>
+            <select id="rarity-filter" onchange="filterCards()">
+                <option value="all">全部</option>
+                <option value="N">N</option>
+                <option value="R">R</option>
+                <option value="SR">SR</option>
+                <option value="SSR">SSR</option>
+                <option value="UR">UR</option>
+            </select>
+        </div>
+        <div id="card-list" class="card-grid"></div>
+        <button class="floating-back-btn" onclick="showPage('home')">返回</button>
     </div>
 
     <!-- 合成頁 -->
@@ -52,17 +62,20 @@
             <button onclick="craftCard('SR')">合成</button>
         </div>
         <div class="recipe">
-            <h3>3張稀有卡(SR) → 1超級特別稀有(SSR)</h3>
+            <h3>3張超稀有卡(SR) → 1張超級特別稀有(SSR)</h3>
             <button onclick="craftCard('SSR')">合成</button>
         </div>
         <div class="recipe">
-            <h3>3張稀有卡(SSR) → 1極其稀有(UR)</h3>
+            <h3>3張超級特別稀有(SSR) → 1張極其稀有(UR)</h3>
             <button onclick="craftCard('UR')">合成</button>
         </div>
         <button onclick="showPage('home')">返回</button>
     </div>
 
     <div class="save-notice">自動保存成功！</div>
+    <!-- 音效元素 -->
+    <audio id="draw-sound" src="draw.mp3" preload="auto"></audio>
+    <audio id="use-sound" src="use.mp3" preload="auto"></audio>
     <script src="script.js"></script>
 </body>
 </html>
