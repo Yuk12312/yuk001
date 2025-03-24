@@ -1,4 +1,3 @@
-/* style.css */
 :root {
     --primary-color: #ff69b4;
     --secondary-color: #ffb6c1;
@@ -19,6 +18,12 @@ body {
     padding: 20px;
     max-width: 800px;
     margin: 0 auto;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.page.active {
+    opacity: 1;
 }
 
 h1, h2 {
@@ -38,6 +43,11 @@ button {
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.2);
 }
 
 button:active {
@@ -106,11 +116,56 @@ button:active {
     font-weight: bold;
 }
 
-#card-list {
+.filter {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.filter select {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #007bff;
+}
+
+.card-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
     padding: 20px;
-    justify-content: center;
+}
+
+.floating-back-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    padding: 10px 20px;
+    background: #ff5733;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.floating-back-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+}
+
+.empty-tip {
+    color: #888;
+    font-size: 18px;
+    text-align: center;
+}
+
+.card-result-text {
+    font-size: 18px;
+    color: #ff69b4;
+    text-align: center;
+    margin-top: 10px;
 }
 
 .save-notice {
@@ -122,7 +177,7 @@ button:active {
     padding: 12px 24px;
     border-radius: 30px;
     display: none;
-    animation: slideIn 0.5s ease-out;
+    animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-out 1.5s;
 }
 
 .rarity-badge {
@@ -156,4 +211,8 @@ button:active {
 @keyframes slideIn {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; }
 }
