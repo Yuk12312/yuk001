@@ -76,7 +76,7 @@ function startGame() {
         },
         { 
             text: "我們第一次約會的地點？",
-            answer: "貓cafe",
+            answer: "觀塘",
             hint: "很多可愛生物的地方"
         },
         { 
